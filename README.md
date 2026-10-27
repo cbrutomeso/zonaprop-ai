@@ -2,7 +2,7 @@
 
 Course repository for **AI & Data Science for Economists**.
 
-You will use the Cursor agent to download a public real-estate search into a CSV, keep one documented command, and compare the row count with the total the site announces.
+You will use the Cursor agent to download a public ZonaProp search into a CSV and explore the published USD price before fitting a model.
 
 ## Before you start
 
@@ -77,7 +77,7 @@ https://www.zonaprop.com.ar/casas-departamentos-ph-venta-capital-federal.html
 
 Campos que necesito, con nombres fijos: precio en USD, barrio, ambientes, dormitorios, baños, descripción, tipo (casa, departamento, ph o terreno) y superficie total, cubierta y descubierta.
 
-Sumá las columnas que sirvan para un análisis o un modelo. Dejá un solo comando documentado y decime cuántas filas quedaron contra el total que anuncia el sitio.
+Sumá las columnas que sirvan para un análisis o un modelo. Dejá un solo comando documentado. El CSV queda en data/.
 ```
 
 The CSV belongs in `data/`. That directory is gitignored, so the download stays on your machine and is not part of what you push.
@@ -88,6 +88,19 @@ The CSV belongs in `data/`. That directory is gitignored, so the download stays 
 python src/scrape.py https://www.zonaprop.com.ar/casas-departamentos-ph-venta-capital-federal.html --workers 6
 ```
 
-`url` is the search page. `--workers` is how many slices download at once (default 6). Each worker uses its own HTTP session and requests that slice's pages one after another: concurrent requests for different pages of the same search repeat listings. The command writes `data/<slug>.csv` and prints that path, the unique row count, the total the site announced at the start of the run, and how many page requests failed.
+`url` is the search page. `--workers` is how many slices download at once (default 6). Each worker uses its own HTTP session and requests that slice's pages one after another: concurrent requests for different pages of the same search repeat listings. The command writes `data/<slug>.csv` and prints that path and how many listings were saved.
 
 The first page is HTML. The records are in `window.__PRELOADED_STATE__`. Changing page loads `...-pagina-N.html` and also POSTs `/rplis-api/postings` with the filters already applied (`pagina`, operation, property types, location). Deep HTML answers with a Cloudflare check while that POST still returns the page you asked for, until a cap: past it, `currentPage` is no longer the page requested or the first listing id repeats page 1. That cap is far below the advertised page count, and pages past about 140 in a single slice start repeating listings already saved. The default order (relevance) repeats listings even earlier, so the download asks for the same filters ordered by most recent, which announces the same total. Slices above that page window are split with the property-type filter from the page, then by USD price, and deduplicated by listing id. The room filter is not a partition: listings with no room count fall out of every bucket. `precio_usd` and the square-meter columns stay empty when the source value is in another unit. `superficie_descubierta` is the published figure, or total minus covered when both are in m².
+
+## Price exploration
+
+`notebooks/eda_propiedades_caba.ipynb` explores the Capital Federal sales CSV before fitting a price model. It covers distributions, outliers, missing values, percentiles, the association of the published USD price with the other columns, a correlation matrix, a neighborhood map, and a subway heat map. Phrases in the description become amenity flags, and those columns enter the same charts.
+
+The downloader uses only the Python standard library. The notebook needs `requirements.txt`:
+
+```bash
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+```
+
+Open the notebook and select that environment as the kernel. It reads `data/casas-departamentos-ph-venta-capital-federal.csv`, which stays out of git. On the first run it downloads official neighborhood and subway GeoJSON into `data/geo/`.
