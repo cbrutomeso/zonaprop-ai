@@ -104,3 +104,14 @@ python -m venv .venv
 ```
 
 Open the notebook and select that environment as the kernel. It reads `data/casas-departamentos-ph-venta-capital-federal.csv`, which stays out of git. On the first run it downloads official neighborhood and subway GeoJSON into `data/geo/`.
+
+## Price models
+
+`notebooks/modelo_precio_caba.ipynb` uses the same CSV to compare three estimators of the
+published USD price: linear regression with train-only robust limits and median imputation,
+LightGBM with median imputation, and LightGBM with its native handling of missing values.
+
+Run every cell after installing `requirements.txt`. The notebook creates a fixed 70/15/15
+train, validation, and test split; tunes five LightGBM hyperparameters on validation; and
+shows the final test MAE, RMSE, MAPE, and R² in USD. Results and fitted models remain in the
+notebook session; it does not write a model or predictions file.
