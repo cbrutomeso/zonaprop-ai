@@ -2,6 +2,13 @@
 
 Course repository for **AI & Data Science for Economists**.
 
+> **About this course**
+>
+> This is a guided, hands-on project designed for economics students with little or no
+> prior experience in data science, machine learning, or AI tools. The material emphasizes
+> accessibility and explains the setup and workflow step by step, without assuming a
+> technical background.
+
 You will use the Cursor agent to download a public ZonaProp search into a CSV and explore the published USD price before fitting a model.
 
 ## Before you start
